@@ -1,19 +1,50 @@
 package mines.ales.agenda.emagenda;
 
-import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.support.v7.app.ActionBarActivity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import com.activeandroid.ActiveAndroid;
+
+import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EActivity;
 
+import java.util.List;
+
+import mines.ales.agenda.api.API_agenda;
+import mines.ales.agenda.api.API_emagenda;
+import mines.ales.agenda.api.callback.OnCourseListener;
+import mines.ales.agenda.api.callback.OnPromotionListener;
+import mines.ales.agenda.api.callback.OnStudentListener;
+import mines.ales.agenda.api.pojo.Course;
+import mines.ales.agenda.api.pojo.Promotion;
+import mines.ales.agenda.api.pojo.Student;
+
 @EActivity
-public class MainActivity extends ActionBarActivity {
+public class MainActivity extends ActionBarActivity implements OnStudentListener, OnPromotionListener, OnCourseListener {
+    @Bean(API_emagenda.class)
+    API_agenda api_agenda;
+    private final String TAG = "MAIN ACTIVITY";
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        api_agenda.addOnStudentListener(this);
+        api_agenda.addOnPromotionListener(this);
+        api_agenda.getAllPromotions();
+        api_agenda.getAllStudents();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        api_agenda.removeOnStudentListener(this);
+        api_agenda.removeOnPromotionListener(this);
+        api_agenda.removeOnCourseListener(this);
     }
 
     /**
@@ -43,5 +74,41 @@ public class MainActivity extends ActionBarActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onStudentsFound(List<Student> students) {
+        ActiveAndroid.beginTransaction();
+        try {
+            for (Student student : students)
+                student.save();
+            ActiveAndroid.setTransactionSuccessful();
+        } finally {
+            ActiveAndroid.endTransaction();
+        }
+    }
+
+    @Override
+    public void onPromotionsFound(List<Promotion> promotions) {
+        ActiveAndroid.beginTransaction();
+        try {
+            for (Promotion promotion : promotions)
+                promotion.save();
+            ActiveAndroid.setTransactionSuccessful();
+        } finally {
+            ActiveAndroid.endTransaction();
+        }
+    }
+
+    @Override
+    public void onCoursesFound(List<Course> courses) {
+        ActiveAndroid.beginTransaction();
+        try {
+            for (Course course : courses)
+                course.save();
+            ActiveAndroid.setTransactionSuccessful();
+        } finally {
+            ActiveAndroid.endTransaction();
+        }
     }
 }

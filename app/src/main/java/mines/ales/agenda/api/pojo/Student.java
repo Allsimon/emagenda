@@ -51,6 +51,7 @@ public class Student extends Model {
 
     /**
      * Id field is already used by Activeandroid, app_id is the idea used by the CGI
+     *
      * @return id
      */
     public long getApp_id() {
@@ -59,5 +60,16 @@ public class Student extends Model {
 
     public void setApp_id(long app_id) {
         this.app_id = app_id;
+    }
+
+    @Override
+    public String toString() {
+        return "Student{" +
+                "firstName='" + firstName + '\'' +
+                ", lastName='" + lastName + '\'' +
+                ", email='" + email + '\'' +
+                ", promotion=" + promotion +
+                ", app_id=" + app_id +
+                '}';
     }
 }

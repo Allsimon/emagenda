@@ -31,4 +31,12 @@ public class Promotion extends Model {
     public void setApp_id(long app_id) {
         this.app_id = app_id;
     }
+
+    @Override
+    public String toString() {
+        return "Promotion{" +
+                "name='" + name + '\'' +
+                ", app_id=" + app_id +
+                '}';
+    }
 }

@@ -1,6 +1,7 @@
 package mines.ales.agenda.api;
 
 import android.content.Context;
+import android.util.Log;
 
 import com.activeandroid.query.Select;
 
@@ -24,8 +25,8 @@ import mines.ales.agenda.api.pojo.Course;
 import mines.ales.agenda.api.pojo.Promotion;
 import mines.ales.agenda.api.pojo.Student;
 
-@EBean
-public class API_emagenda implements API_agenda {
+@EBean(scope = EBean.Scope.Singleton)
+public class API_emagenda extends API_agenda {
     private final String SERVER = "http://webdfd.ema.fr/cybema/cgi-bin/cgiempt.exe?TYPE=";
     private final String ADDRESS_PROMOTIONS = "promos_txt";
     private final String ADDRESS_COURSES = "planning_txt";
@@ -37,11 +38,12 @@ public class API_emagenda implements API_agenda {
     private final String KEY_TYPE_PROMOTION = "p0cleunik";
     private final String KEY_TYPE_STUDENT = "evcleunik";
     private final SimpleDateFormat parser = new SimpleDateFormat("yyyyMMddHHmm");
+    private final String TAG = "API_EMAGENDA";
+    private List<Promotion> promotions = new Select().from(Promotion.class).execute();
 
     @Override
     @Background
-    public List<Promotion> getAllPromotions() {
-        List<Promotion> promotions = new Select().from(Promotion.class).execute();
+    public void getAllPromotions() {
         if (promotions.size() == 0)
             try {
                 InputStream inputStream = httpGet(SERVER + ADDRESS_PROMOTIONS);
@@ -71,12 +73,12 @@ public class API_emagenda implements API_agenda {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-        return promotions;
+        notifyPromotionsFound(promotions);
     }
 
     @Override
     @Background
-    public List<Student> getAllStudents() {
+    public void getAllStudents() {
         List<Student> students = new Select().from(Student.class).execute();
         if (students.size() == 0)
             try {
@@ -86,6 +88,7 @@ public class API_emagenda implements API_agenda {
                 String s;
                 String[] splitted;
                 Student student;
+                long temps = System.currentTimeMillis();
                 while ((s = bufferedReader.readLine()) != null) {
                     if (!"EOT".equals(s)) {
                         student = new Student();
@@ -99,7 +102,7 @@ public class API_emagenda implements API_agenda {
                                     student.setLastName(splitted[i + 1]);
                                     break;
                                 case "PRENOM":
-                                    student.setLastName(splitted[i + 1]);
+                                    student.setFirstName(splitted[i + 1]);
                                     break;
                                 case "MEL":
                                     student.setEmail(splitted[i + 1]);
@@ -116,11 +119,11 @@ public class API_emagenda implements API_agenda {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-        return students;
+        notifyStudentsFound(students);
     }
 
     @Override
-    public List<Course> getAllCourses(Date startDate, Date endDate) {
+    public void getAllCourses(Date startDate, Date endDate) {
         List<Course> courses = new Select().from(Student.class).execute();
         if (courses.size() == 0)
             try {
@@ -130,6 +133,7 @@ public class API_emagenda implements API_agenda {
                 String s;
                 String[] splitted;
                 Course course;
+                long time = System.currentTimeMillis();
                 while ((s = bufferedReader.readLine()) != null) {
                     if (!"EOT".equals(s)) {
                         course = new Course();
@@ -150,7 +154,7 @@ public class API_emagenda implements API_agenda {
                                     course.setEndTime(parseDate(date + splitted[i + 1]));
                                     break;
                                 case "TYPE":
-                                    if ("CONTROLE ".equals(splitted[i + 1]))
+                                    if ("CONTROLE".equals(splitted[i + 1].trim()))
                                         course.setControle(true);
                                     break;
                                 case "COURS":
@@ -160,7 +164,8 @@ public class API_emagenda implements API_agenda {
                                     course.setRoom(splitted[i + 1]);
                                     break;
                                 case "GROUPE":
-                                    course.setGroup(splitted[i + 1]);
+                                    // TODO
+                                    // course.setGroup(splitted[i + 1]);
                                     break;
                                 case "LANOTE":
                                     course.setNote(splitted[i + 1]);
@@ -173,34 +178,37 @@ public class API_emagenda implements API_agenda {
                         courses.add(course);
                     }
                 }
+                Log.e(TAG, System.currentTimeMillis() - time + "");
                 inputStream.close();
             } catch (IOException e) {
                 e.printStackTrace();
             }
-        return courses;
+        notifyCoursesFound(courses);
     }
 
     @Override
-    public List<Course> getAllCoursesByPromotion(Promotion promotion, Date startDate, Date endDate) {
-        return null;
+    public void getAllCoursesByPromotion(Promotion promotion, Date startDate, Date endDate) {
     }
 
     @Override
-    public List<Student> getStudentByPromotion(Promotion promotion) {
-        return null;
+    public void getStudentByPromotion(Promotion promotion) {
     }
 
     @Override
-    public List<Course> getAllCoursesByStudent(Student student, Date startDate, Date endDate) {
-        return null;
+    public void getAllCoursesByStudent(Student student, Date startDate, Date endDate) {
     }
 
     private long toLong(String string) {
-        return Long.getLong(string);
+        return Long.parseLong(string.trim());
     }
 
     private Promotion getPromotionsByAppID(long app_id) {
-        return new Select().from(Promotion.class).where("app_id = ?", app_id).executeSingle();
+        if (promotions.size() == 0)
+            getAllPromotions();
+        for (Promotion promotion : promotions)
+            if (promotion.getApp_id() == app_id)
+                return promotion;
+        return null;
     }
 
     private Date parseDate(String date) {
@@ -213,7 +221,7 @@ public class API_emagenda implements API_agenda {
     }
 
     @SupposeBackground
-    private InputStream httpGet(String url) throws IOException {
+    public InputStream httpGet(String url) throws IOException {
         HttpURLConnection conn = (HttpURLConnection) new URL(url).openConnection();
         conn.setReadTimeout(10000);
         conn.setConnectTimeout(15000);

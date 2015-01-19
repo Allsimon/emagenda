@@ -14,8 +14,8 @@ public class Course extends Model {
     private String room;
     @Column(name = "teacher")
     private String teacher;
-    @Column(name = "group")
-    private String group;
+    @Column(name = "section")
+    private Group group;
     @Column(name = "note")
     private String note;
     @Column(name = "startTime")
@@ -53,11 +53,11 @@ public class Course extends Model {
         this.teacher = teacher;
     }
 
-    public String getGroup() {
+    public Group getGroup() {
         return group;
     }
 
-    public void setGroup(String group) {
+    public void setGroup(Group group) {
         this.group = group;
     }
 
@@ -112,5 +112,21 @@ public class Course extends Model {
 
     public void setApp_id(long app_id) {
         this.app_id = app_id;
+    }
+
+    @Override
+    public String toString() {
+        return "Course{" +
+                "name='" + name + '\'' +
+                ", room='" + room + '\'' +
+                ", teacher='" + teacher + '\'' +
+                ", group=" + group +
+                ", note='" + note + '\'' +
+                ", startTime=" + startTime +
+                ", endTime=" + endTime +
+                ", isControle=" + isControle +
+                ", promotion=" + promotion +
+                ", app_id=" + app_id +
+                '}';
     }
 }
