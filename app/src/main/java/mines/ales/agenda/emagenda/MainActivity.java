@@ -11,6 +11,7 @@ import com.activeandroid.ActiveAndroid;
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EActivity;
 
+import java.util.Date;
 import java.util.List;
 
 import mines.ales.agenda.api.API_agenda;
@@ -35,8 +36,9 @@ public class MainActivity extends ActionBarActivity implements OnStudentListener
         setContentView(R.layout.activity_main);
         api_agenda.addOnStudentListener(this);
         api_agenda.addOnPromotionListener(this);
+        api_agenda.addOnCourseListener(this);
         api_agenda.getAllPromotions();
-        api_agenda.getAllStudents();
+
     }
 
     @Override
@@ -69,9 +71,8 @@ public class MainActivity extends ActionBarActivity implements OnStudentListener
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
+        if (id == R.id.action_settings)
             return true;
-        }
 
         return super.onOptionsItemSelected(item);
     }
@@ -80,8 +81,8 @@ public class MainActivity extends ActionBarActivity implements OnStudentListener
     public void onStudentsFound(List<Student> students) {
         ActiveAndroid.beginTransaction();
         try {
-            for (Student student : students)
-                student.save();
+            for (int i = 0; i < students.size(); i++)
+                students.get(i).save();
             ActiveAndroid.setTransactionSuccessful();
         } finally {
             ActiveAndroid.endTransaction();
@@ -92,20 +93,23 @@ public class MainActivity extends ActionBarActivity implements OnStudentListener
     public void onPromotionsFound(List<Promotion> promotions) {
         ActiveAndroid.beginTransaction();
         try {
-            for (Promotion promotion : promotions)
-                promotion.save();
+            for (int i = 0; i < promotions.size(); i++)
+                promotions.get(i).save();
             ActiveAndroid.setTransactionSuccessful();
         } finally {
             ActiveAndroid.endTransaction();
         }
+        api_agenda.getAllStudents();
+        api_agenda.getAllCoursesByPromotion(promotions.get(3), new Date(), new Date());
     }
 
     @Override
     public void onCoursesFound(List<Course> courses) {
         ActiveAndroid.beginTransaction();
         try {
-            for (Course course : courses)
-                course.save();
+            for (int i = 0; i < courses.size(); i++) {
+                courses.get(i).save();
+            }
             ActiveAndroid.setTransactionSuccessful();
         } finally {
             ActiveAndroid.endTransaction();
