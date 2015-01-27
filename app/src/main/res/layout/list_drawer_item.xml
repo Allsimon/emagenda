@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="72dp"
+    android:orientation="horizontal"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin">
+
+    <ImageView
+        android:id="@+id/icon"
+        style="@style/icon_medium"
+        android:layout_gravity="center_vertical"
+        android:contentDescription="@string/icon" />
+
+    <TextView
+        android:id="@+id/title"
+        style="@style/TextAppearance.AppCompat.Widget.ActionBar.Title"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:ellipsize="end"
+        android:gravity="start|center_vertical"
+        android:paddingLeft="@dimen/activity_horizontal_margin"
+        android:singleLine="true" />
+
+    <TextView
+        android:id="@+id/counter"
+        style="@style/counter"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_gravity="end"
+        android:layout_weight="1"
+        android:gravity="end|center_vertical"
+        android:singleLine="true" />
+</LinearLayout>

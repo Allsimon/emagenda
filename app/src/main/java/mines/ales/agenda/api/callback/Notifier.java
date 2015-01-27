@@ -1,7 +1,7 @@
 package mines.ales.agenda.api.callback;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import mines.ales.agenda.api.pojo.Course;
 import mines.ales.agenda.api.pojo.Promotion;
@@ -14,19 +14,19 @@ public class Notifier {
 
     public void addOnCourseListener(OnCourseListener onCourseListener) {
         if (onCourseListeners == null)
-            onCourseListeners = new ArrayList<>();
+            onCourseListeners = new CopyOnWriteArrayList<>();
         onCourseListeners.add(onCourseListener);
     }
 
     public void addOnPromotionListener(OnPromotionListener onPromotionListener) {
         if (onPromotionListeners == null)
-            onPromotionListeners = new ArrayList<>();
+            onPromotionListeners = new CopyOnWriteArrayList<>();
         onPromotionListeners.add(onPromotionListener);
     }
 
     public void addOnStudentListener(OnStudentListener onStudentListener) {
         if (onStudentListeners == null)
-            onStudentListeners = new ArrayList<>();
+            onStudentListeners = new CopyOnWriteArrayList<>();
         onStudentListeners.add(onStudentListener);
     }
 

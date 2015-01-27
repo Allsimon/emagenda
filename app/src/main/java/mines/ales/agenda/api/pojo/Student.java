@@ -1,11 +1,13 @@
 package mines.ales.agenda.api.pojo;
 
+import android.support.annotation.NonNull;
+
 import com.activeandroid.Model;
 import com.activeandroid.annotation.Column;
 import com.activeandroid.annotation.Table;
 
 @Table(name = "students")
-public class Student extends Model {
+public class Student extends Model implements Comparable {
     @Column(name = "firstName")
     private String firstName;
     @Column(name = "lastName")
@@ -71,5 +73,12 @@ public class Student extends Model {
                 ", promotion=" + promotion +
                 ", app_id=" + app_id +
                 '}';
+    }
+
+    @Override
+    public int compareTo(@NonNull Object another) {
+        if (!(another instanceof Student))
+            return 0;
+        return getLastName().compareTo(((Student) another).getLastName());
     }
 }

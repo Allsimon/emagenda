@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Emagenda</string>
+    <string name="courseTest">Contrôle</string>
+    <string name="action_settings">Paramètres</string>
+    <string name="name">Nom</string>
+    <string name="general">Général</string>
+    <string name="advanced_search">Recherche avancée</string>
+    <string name="name_search">Rechercher par nom</string>
+    <string name="name_search_off">Rechercher par promotion</string>
+</resources>

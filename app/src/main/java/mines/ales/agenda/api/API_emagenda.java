@@ -1,8 +1,5 @@
 package mines.ales.agenda.api;
 
-import android.content.Context;
-import android.util.Log;
-
 import com.activeandroid.query.Select;
 
 import org.androidannotations.annotations.Background;
@@ -10,7 +7,6 @@ import org.androidannotations.annotations.EBean;
 import org.androidannotations.annotations.SupposeBackground;
 
 import java.io.BufferedReader;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -18,6 +14,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -44,7 +41,7 @@ public class API_emagenda extends API_agenda {
     private final SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMdd");
     private final String TAG = "API_EMAGENDA";
     private List<Promotion> promotions = new Select().from(Promotion.class).execute();
-    private List<Course> courses = new Select().from(Course.class).execute();
+    private List<Course> mCourses = new Select().from(Course.class).execute();
     private List<Student> students = new Select().from(Student.class).execute();
 
     @Override
@@ -93,7 +90,7 @@ public class API_emagenda extends API_agenda {
                 String s;
                 String[] splitted;
                 Student student = null;
-                long temps = System.currentTimeMillis();
+                boolean exist = false;
                 while ((s = bufferedReader.readLine()) != null) {
                     if (!"EOT".equals(s)) {
                         splitted = s.split(";");
@@ -124,6 +121,7 @@ public class API_emagenda extends API_agenda {
             } catch (IOException e) {
                 e.printStackTrace();
             }
+
         notifyStudentsFound(students);
     }
 
@@ -134,19 +132,33 @@ public class API_emagenda extends API_agenda {
 
     @Override
     public void getAllCoursesByPromotion(Promotion promotion, Date startDate, Date endDate) {
+        List<Course> courses = new ArrayList<>();
+        for (Course course : mCourses) {
+            if (course.getPromotion().getApp_id() == promotion.getApp_id())
+                courses.add(course);
+        }
+        if (courses.size() != 0)
+            notifyCoursesFound(courses);
         try {
             InputStream inputStream = httpGet(SERVER + ADDRESS_COURSES
                     + PREFIX_START_TIME + formatter.format(startDate)
                     + PREFIX_END_TIME + formatter.format(endDate)
                     + PREFIX_KEY_VALUE + promotion.getApp_id()
                     + PREFIX_KEY_TYPE + KEY_TYPE_PROMOTION);
+//            Log.e("fsd", SERVER + ADDRESS_COURSES
+//                    + PREFIX_START_TIME + formatter.format(startDate)
+//                    + PREFIX_END_TIME + formatter.format(endDate)
+//                    + PREFIX_KEY_VALUE + promotion.getApp_id()
+//                    + PREFIX_KEY_TYPE + KEY_TYPE_PROMOTION);
             InputStreamReader inputStreamReader = new InputStreamReader(inputStream, "ISO-8859-1");
             BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
             String s;
             String[] splitted;
             Course course, courseTemp;
+            boolean exist;
             while ((s = bufferedReader.readLine()) != null) {
                 if (!"EOT".equals(s)) {
+                    exist = false;
                     course = new Course();
                     splitted = s.split(";");
                     String date = null;
@@ -154,8 +166,10 @@ public class API_emagenda extends API_agenda {
                         switch (splitted[i]) {
                             case "PL":
                                 courseTemp = new Select().from(Course.class).where("app_id = ?", splitted[i + 1]).executeSingle();
-                                if (courseTemp != null)
-                                    course = courseTemp;
+                                if (courseTemp != null) {
+                                    exist = true;
+                                    break;
+                                }
                                 course.setApp_id(toLong(splitted[i + 1]));
                                 break;
                             case "DATE":
@@ -192,7 +206,8 @@ public class API_emagenda extends API_agenda {
                                 break;
                         }
                     }
-                    courses.add(course);
+                    if (!exist)
+                        courses.add(course);
                 }
             }
             inputStream.close();
@@ -217,9 +232,9 @@ public class API_emagenda extends API_agenda {
     private Student getStudentByAppID(long app_id) {
         if (students.size() == 0)
             getAllStudents();
-        for (Student student : students)
-            if (student.getApp_id() == app_id)
-                return student;
+        for (int i = 0; i < students.size(); i++)
+            if (students.get(i).getApp_id() == app_id)
+                return students.get(i);
         return new Student();
     }
 

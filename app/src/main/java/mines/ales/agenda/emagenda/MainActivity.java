@@ -1,17 +1,13 @@
 package mines.ales.agenda.emagenda;
 
 import android.os.Bundle;
-import android.support.v7.app.ActionBarActivity;
-import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
 
 import com.activeandroid.ActiveAndroid;
 
+import org.androidannotations.annotations.Background;
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EActivity;
 
-import java.util.Date;
 import java.util.List;
 
 import mines.ales.agenda.api.API_agenda;
@@ -22,23 +18,46 @@ import mines.ales.agenda.api.callback.OnStudentListener;
 import mines.ales.agenda.api.pojo.Course;
 import mines.ales.agenda.api.pojo.Promotion;
 import mines.ales.agenda.api.pojo.Student;
+import mines.ales.agenda.emagenda.adapter.NavDrawerItem;
+import mines.ales.agenda.emagenda.fragment.FragmentAgenda_;
+import mines.ales.agenda.emagenda.fragment.FragmentSettings_;
 
 @EActivity
-public class MainActivity extends ActionBarActivity implements OnStudentListener, OnPromotionListener, OnCourseListener {
+public class MainActivity extends AbstractActivity implements OnStudentListener, OnPromotionListener, OnCourseListener {
+    private final String TAG = "MAIN ACTIVITY";
     @Bean(API_emagenda.class)
     API_agenda api_agenda;
-    private final String TAG = "MAIN ACTIVITY";
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
         api_agenda.addOnStudentListener(this);
         api_agenda.addOnPromotionListener(this);
         api_agenda.addOnCourseListener(this);
         api_agenda.getAllPromotions();
 
+    }
+
+    @Override
+    public void prepareNavDrawerItems() {
+        mNavDrawerItems.add(new NavDrawerItem(getResources().getString(R.string.action_settings), R.drawable.ic_action_settings) {
+            public void onClick() {
+                changeFragment(new FragmentSettings_());
+
+            }
+        });
+        mNavDrawerItems.add(new NavDrawerItem(getResources().getString(R.string.agenda), R.drawable.ic_action_event) {
+            @Override
+            public void onClick() {
+                changeFragment(new FragmentAgenda_());
+            }
+        });
+    }
+
+
+    @Override
+    public void initFragment() {
+        changeFragment(new FragmentSettings_());
     }
 
     @Override
@@ -56,28 +75,9 @@ public class MainActivity extends ActionBarActivity implements OnStudentListener
      * http://webdfd.ema.fr/cybema/cgi-bin/cgiempt.exe?TYPE=promos_txt
      */
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
-    }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings)
-            return true;
-
-        return super.onOptionsItemSelected(item);
-    }
-
-    @Override
+    @Background
     public void onStudentsFound(List<Student> students) {
         ActiveAndroid.beginTransaction();
         try {
@@ -90,6 +90,7 @@ public class MainActivity extends ActionBarActivity implements OnStudentListener
     }
 
     @Override
+    @Background
     public void onPromotionsFound(List<Promotion> promotions) {
         ActiveAndroid.beginTransaction();
         try {
@@ -100,10 +101,11 @@ public class MainActivity extends ActionBarActivity implements OnStudentListener
             ActiveAndroid.endTransaction();
         }
         api_agenda.getAllStudents();
-        api_agenda.getAllCoursesByPromotion(promotions.get(3), new Date(), new Date());
     }
 
+
     @Override
+    @Background
     public void onCoursesFound(List<Course> courses) {
         ActiveAndroid.beginTransaction();
         try {

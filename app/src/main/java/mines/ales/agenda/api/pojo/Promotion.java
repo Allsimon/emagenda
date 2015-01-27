@@ -4,8 +4,10 @@ import com.activeandroid.Model;
 import com.activeandroid.annotation.Column;
 import com.activeandroid.annotation.Table;
 
+import java.io.Serializable;
+
 @Table(name = "promotions")
-public class Promotion extends Model {
+public class Promotion extends Model implements Serializable {
     @Column(name = "name")
     private String name;
     @Column(name = "app_id")

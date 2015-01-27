@@ -1,13 +1,17 @@
 package mines.ales.agenda.api.pojo;
 
+import android.support.annotation.NonNull;
+
 import com.activeandroid.Model;
 import com.activeandroid.annotation.Column;
 import com.activeandroid.annotation.Table;
 
+import java.io.Serializable;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 @Table(name = "courses")
-public class Course extends Model {
+public class Course extends Model implements Comparable, Serializable {
     @Column(name = "name")
     private String name;
     @Column(name = "room")
@@ -28,6 +32,7 @@ public class Course extends Model {
     private Promotion promotion;
     @Column(name = "app_id")
     private long app_id;
+    private String duration;
 
     public String getName() {
         return name;
@@ -128,5 +133,21 @@ public class Course extends Model {
                 ", promotion=" + promotion +
                 ", app_id=" + app_id +
                 '}';
+    }
+
+    public String getDuration() {
+        SimpleDateFormat formatter = new SimpleDateFormat("HH:mm");
+        try {
+            return formatter.format(startTime) + " - " + formatter.format(endTime);
+        } catch (Exception e) {
+            return "";
+        }
+    }
+
+    @Override
+    public int compareTo(@NonNull Object another) {
+        if (another instanceof Course)
+            return getStartTime().compareTo(((Course) another).getStartTime());
+        return 0;
     }
 }
